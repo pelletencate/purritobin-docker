@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  purrito:
+    build: .
+    command: purrito -d ${PROTOCOL}://${HOST}:${WEB_PORT}/paste.html# -s data
+    ports:
+      - ${PURR_PORT}:42069
+    volumes:
+      - ./www:/data
+  www:
+    image: nginx
+    ports:
+      - ${WEB_PORT}:80
+    volumes:
+      - ./www:/usr/share/nginx/html
