@@ -1,0 +1,125 @@
+<!--
+    Copyright (c) 2020 Aisha Tammy <purrito@bsd.ac>, Pelle ten Cate <hi@pelle.codes>
+    Permission to use, copy, modify, and distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PurritoBin</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/default.min.css" />
+  </head>
+  <body>
+    <h1>Purrito Bin</h1>
+    <div id="welcome" style="display: none">
+      <p>To use, add the following scripts to your .bashrc / .zshrc</p>
+      <pre><code id="welcome-code" class="bash">
+  purr() {
+    curl --silent --data-binary "@${1:-/dev/stdin}" http://localhost:42069
+  }
+
+  meow() {
+    key="$(openssl rand -hex 32)"
+    iv="$(openssl rand -hex 16)"
+    url="$(openssl enc -aes-256-cbc -K ${key} -iv ${iv} -e -base64 -A < ${1:-/dev/stdin} | purr)"
+    printf %s\\n "${url}_${key}_${iv}"
+    unset key iv url
+  }
+      </code></pre>
+
+      <p>Then, you can use <strong>purr</strong> to create a public paste:</p>
+      <pre><code class="shell">
+  $ echo "Hello world" | purr
+  http://localhost:4080#v0o2ewu
+
+  $ purr < my_file.txt
+  http://localhost:4080#v0o2ewu
+      </code></pre>
+
+      Or you can use <strong>meow</strong> to create a client-side-encrypted paste:
+
+      <pre><code class="shell">
+  $ echo "Hello world" | meow
+  http://localhost:4080#p7qn66b_2639723e906bea950f6efa1f44ac0b7f20f110912a96cc2603a1b9808ab16866_6b3763c7f0a5769b50bab33d59a37ad8
+
+  $ meow < my_file.txt
+  http://localhost:4080#b478jcs_e9d5c495df83bac0bfb0ea70232ab961b3bcac8663c5a21365ce18875df43a73_7362914ca6874ff6fa3b1b41907cf005
+      </code></pre>
+    </div>
+    <pre><code id="dec"></code></pre>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"
+    ></script>
+    <script type="text/javascript">
+      function makeHttpObject() {
+        try {
+          return new XMLHttpRequest();
+        } catch (error) {}
+        try {
+          return new ActiveXObject('Msxml2.XMLHTTP');
+        } catch (error) {}
+        try {
+          return new ActiveXObject('Microsoft.XMLHTTP');
+        } catch (error) {}
+        throw new Error('Could not create HTTP request object.');
+      }
+
+      // first we get the needed values from the hash
+      // this is still secure cuz nothing is sent to the server
+      var hash = window.location.hash.substr(1);
+      var hashv = hash.split('_');
+      if (hashv.length > 0 && hash != '') {
+        var pasteurl = '/' + hashv[0];
+        var key = '',
+          default_iv = '';
+        if (hashv.length > 1) {
+          key = CryptoJS.enc.Hex.parse(hashv[1]);
+        }
+        if (hashv.length > 2) {
+          default_iv = CryptoJS.enc.Hex.parse(hashv[2]);
+        } else {
+          default_iv = CryptoJS.enc.Hex.parse('00000000000000000000000000000000');
+        }
+
+        // this part is async, so we need to define the
+        // decryption calls after the request has been fullfilled
+        // the joys of async, damn
+        var request = makeHttpObject();
+        request.open('GET', pasteurl, true);
+        request.send(null);
+        request.onreadystatechange = function () {
+          if (request.readyState == 4) {
+            var decoded = request.responseText;
+            if (hashv.length > 1) {
+              var decrypted = CryptoJS.AES.decrypt(decoded, key, {
+                iv: default_iv,
+                mode: CryptoJS.mode.CBC,
+              });
+              decoded = decrypted.toString(CryptoJS.enc.Utf8);
+            }
+            var data_div = document.getElementById('dec');
+            data_div.innerText = decoded;
+            hljs.highlightBlock(data_div);
+
+            return;
+          }
+        };
+      } else {
+        var elements = document.getElementsByTagName('code');
+        for (var i = 0; i < elements.length; i++) hljs.highlightBlock(elements[i]);
+        document.getElementById('welcome').style.removeProperty('display');
+      }
+    </script>
+  </body>
+</html>

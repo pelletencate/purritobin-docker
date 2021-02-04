@@ -2,7 +2,7 @@ version: '3.9'
 services:
   purrito:
     build: .
-    command: purrito -d ${BASE_URL}/paste.html# -s data
+    command: purrito -d ${BASE_URL}# -s data
     ports:
       - ${PURR_PORT}:42069
     volumes:
