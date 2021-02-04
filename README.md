@@ -20,7 +20,7 @@ meow() {
   key="$(openssl rand -hex 32)"
   iv="$(openssl rand -hex 16)"
   url="$(openssl enc -aes-256-cbc -K ${key} -iv ${iv} -e -base64 -A < ${1:-/dev/stdin} | purr)"
-  printf %s\\n "${url%\/*}/paste.html#${url##*\/}_${key}_${iv}"
+  printf %s\\n "${url}_${key}_${iv}"
   unset key iv url
 }
 
@@ -49,12 +49,11 @@ $ cat README.md | purr
 
 Configuration is done in the .env file. You can change the protocol, host and ports.
 
-| var         | description                  | default     |
-| ----------- | ---------------------------- | ----------- |
-| `PROTOCOL`  | http or https                | `http`      |
-| `HOST`      | hostname to render links for | `localhost` |
-| `WEB_PORT`  | port for receiving pastes    | `4080`      |
-| `PURR_PORT` | port for sending data        | `42069`     |
+| var         | description                                       | default                 |
+| ----------- | ------------------------------------------------- | ----------------------- |
+| `BASE_URL`  | host (with protocol and port) for rendering links | `http://localhost:4080` |
+| `WEB_PORT`  | port for receiving pastes (used by Docker)        | `4080`                  |
+| `PURR_PORT` | port for sending data (used by Docker)            | `42069`                 |
 
 Note that as of this version, you will manually need to alter the `purr` function above in order to reflect any changes made here.
 
