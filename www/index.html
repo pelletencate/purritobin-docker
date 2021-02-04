@@ -54,13 +54,11 @@
   http://localhost:4080#b478jcs_e9d5c495df83bac0bfb0ea70232ab961b3bcac8663c5a21365ce18875df43a73_7362914ca6874ff6fa3b1b41907cf005
       </code></pre>
     </div>
-    <pre><code id="dec"></code></pre>
+    <pre><code id="dec" class="hljs"></code></pre>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
-    <script
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"
-    ></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script type="text/javascript">
       function makeHttpObject() {
         try {
@@ -74,7 +72,6 @@
         } catch (error) {}
         throw new Error('Could not create HTTP request object.');
       }
-
       // first we get the needed values from the hash
       // this is still secure cuz nothing is sent to the server
       var hash = window.location.hash.substr(1);
@@ -106,19 +103,21 @@
                 iv: default_iv,
                 mode: CryptoJS.mode.CBC,
               });
-              decoded = decrypted.toString(CryptoJS.enc.Utf8);
+              decoded = decrypted.toString(CryptoJS.enc.Utf8).replace(/[\r\n]+$/, '');
             }
             var data_div = document.getElementById('dec');
-            data_div.innerText = decoded;
-            hljs.highlightBlock(data_div);
+            var html = hashv.length > 3 ? hljs.highlight(hashv[3], decoded).value : hljs.highlightAuto(decoded).value;
+            data_div.innerHTML = hljs.lineNumbersValue(html);
 
             return;
           }
         };
       } else {
         var elements = document.getElementsByTagName('code');
-        for (var i = 0; i < elements.length; i++) hljs.highlightBlock(elements[i]);
         document.getElementById('welcome').style.removeProperty('display');
+        document.getElementById('dec').style.display = 'none';
+        hljs.initHighlightingOnLoad();
+        hljs.initLineNumbersOnLoad();
       }
     </script>
   </body>

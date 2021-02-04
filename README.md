@@ -2,33 +2,17 @@
 
 This repository creates a simple Docker setup around [PurritoBin](https://github.com/PurritoBin/PurritoBin).
 
-1. Syntax highlighting with highlight.js
-2. Configurable ports
+## Fun stuff I've added
+
+Syntax highlighting with highlight.js, with auto-detection or configurable setup 2. Configurable ports
 
 ## Installation
 
 1. Clone this repository
 2. Run `docker-compose up`
-3. Navigate to http://localhost:4080 and follow the instructions to add the scripts to your shell
+3. Navigate to http://localhost:4080 to find usage instructions!
 
 That's all!
-
-## Usage
-
-To create a plain-text paste
-
-```bash
-$ cat README.md | purr
-http://localhost:4080/#abcdef
-
-```
-
-To create an encrypted paste
-
-```bash
-$ cat README.md | meow
-http://localhost:4080/#abcdef_acc13824f0b3387299944e091d4aa98223ca5f053d3ef23fb81b99ad61d583dc_3a9ee920de98f2815f8747d1ca85f0f8
-```
 
 ## Configuration
 
@@ -56,10 +40,9 @@ so you may want to alter the **index.html** file in order to reflect any changes
 
 - CLI Authentication for creating pastes
 - Add a cron job that cleans the purrs after a configurable expiration period
-- Print these instructions as index.html, while automatically reflecting the settings
 - Burn after reading
 - Password-protection (either generated or asked)
-- Configurable language for syntax highlighting
+- Alternative cipher with shorter keys
 
 ## Acknowledgements
 
